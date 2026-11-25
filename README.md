@@ -41,6 +41,12 @@ next model and gives the checker more known words. At first you type the
 pages yourself on the proofreading page. Once a model exists, it writes the
 draft and you only correct it.
 
+If the notebook page transcribes a **recording**, the companion repository
+[elan-asr-align](https://github.com/bomolopuu/elan-asr-align) puts the page
+onto the recording. The result is one ELAN file with the page's sentences,
+words and glosses on real time, next to an ASR draft. See
+[Next step: the page on the recording](#next-step-the-page-on-the-recording-elan).
+
 ## Installation
 
 Python 3.9 or newer.
@@ -170,6 +176,79 @@ flags three things:
 **With a reference** (the corrected version of the same page), it prints the
 error rate for all characters, for the base letters only and for the tone
 marks only, plus the word-by-word differences.
+
+## Next step: the page on the recording (ELAN)
+
+Field notes are often a transcription of a recording: a tale, a
+conversation, an elicitation session. The page then has the right words and
+the glosses, but no times. An ASR model gives the times, but only a rough text.
+[elan-asr-align](https://github.com/bomolopuu/elan-asr-align) brings the
+two together. It reads the files this repository writes directly.
+
+```
+notebook page ──► this repository ──► gt/page001.gt.tsv  (or ocr/page001.ocr.tsv, or a chatbot's text) ─┐
+                                                                                                        ├──► ocr_asr_to_eaf.py ──► tale_asr_ocr.eaf
+recording ──────► asr_to_eaf.py  (elan-asr-align, omniASR) ──► tale_asr.eaf  ────────────────────────────┘
+```
+
+### Commands
+
+In a clone of elan-asr-align (see its README for installation):
+
+```
+# 1. ASR draft with times. Needs Linux or WSL; a GPU is much faster.
+#    --lang: your language's code (see "Language codes" there), or a related one.
+python asr_to_eaf.py tale.wav --lang xxx_Latn -o tale_asr.eaf
+
+# 2. Compare the page with the ASR draft, align it, write one ELAN file.
+python ocr_asr_to_eaf.py tale.wav ../handwritten-interlinear-htr/gt/page001.gt.tsv \
+       --base tale_asr.eaf -o tale_asr_ocr.eaf
+
+#    Only the comparison, no alignment model needed:
+python ocr_asr_to_eaf.py tale.wav ../handwritten-interlinear-htr/gt/page001.gt.tsv \
+       --base tale_asr.eaf --compare-only
+```
+
+Every `text` line of the `.gt.tsv` becomes one sentence, and the `gloss`
+line under it becomes its glosses. In the ELAN file you get:
+
+| tier | content |
+|---|---|
+| `ASR` | the ASR draft, one annotation per speech segment (the tier name `asr_to_eaf.py` writes) |
+| `Transcription` | the line from the notebook, on real time |
+| `Ref` | its number (1, 2, 3 …: line order, or the numbers of a chatbot's text) |
+| `Words` → `Gloss` | one word and its gloss per annotation, when the gloss line has as many cells as the line has words |
+| `Gloss line` | the whole gloss line, when the counts differ (e.g. two glosses written under one word) |
+| `ASR match` | `CER 17% · <what ASR heard there>`: compare it with the notebook in ELAN |
+
+### What the test run showed
+
+This was tested on one page of a notebook: four lines of a folktale in Afade
+(Chadic), handwritten with tone marks and French glosses, plus its 28.6-minute
+recording and an omniASR draft of it. Neither the page nor the recording is
+included here.
+
+- **The page was found automatically.** Each line matched a stretch of the
+  ASR draft with 15–31 % CER (romanised, tones dropped), and all four matches
+  lay in the same 9 seconds of the 28.6-minute recording. Only that stretch
+  (plus 10 s on each side) was aligned: **30 s on a laptop CPU**, instead of
+  22 min for a search through the whole recording.
+- **The boundaries were the same** as in an earlier careful alignment of the
+  same page (11.58 / 13.77 / 16.25 / 19.07 / 20.46 s). They have not been
+  checked by ear yet.
+- **Tone errors in the OCR do not matter for this step.** The chatbot's
+  reading with its 11 % tone errors and the corrected page gave identical
+  times, because tones are dropped before aligning. You can put a page onto
+  the recording first, then correct the tones in ELAN while listening.
+- **What to look at in ELAN:** a line with a high CER *and* a low alignment
+  score (marked `← check` in the report) was probably not found: listen to
+  it. A high CER with a good score usually means ASR misheard or OCR misread a
+  letter. The `ASR match` tier shows which.
+
+**No ASR for your language?** `attach_reference.py` from the same repository
+aligns a plain `.txt` (one line per sentence) without any ASR file. It cannot
+locate the page by itself, though: it searches the whole recording (slow on a
+CPU) unless you give `--search FROM:TO`, and it does not read the gloss lines.
 
 ## How much to transcribe
 
