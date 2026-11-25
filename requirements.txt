@@ -1,0 +1,6 @@
+# Steps 1-4 (cut lines, proofread, check, export) need only these:
+numpy>=1.21
+Pillow>=9.0
+# Steps 5-6 (train a model, recognise new pages) also need Kraken.
+# Kraken runs on Linux and macOS; on Windows use WSL. See README, "Installing Kraken".
+# kraken>=5.2
