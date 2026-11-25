@@ -5,8 +5,8 @@ checked line by line, and train a handwriting model on your own pages. The
 pages are written in the usual interlinear layout:
 
 ```
-bə̀lò   gó     gə́rám    èŋ  gə̀ŋ  gàkűró        ← line in the language, with tone marks
-|homme| avec| femmes| de | lui| trois|          ← gloss line
+tàmú  bé    kɔ̀lɔ́    ŋwà  sì                    ← line in the language, with tone marks (made-up example)
+|homme| avec| femme | sa | deux|                ← gloss line
 ```
 
 Everything runs on your own computer. You need no account, subscription or
@@ -15,7 +15,7 @@ internet connection, and no AI service.
 ## Why train a model at all
 
 General OCR tools and AI chatbots get the base letters of such notes roughly
-right, but they **invent or drop tone marks**. On our test page a chatbot
+right, but they **invent or drop tone marks**. On our test page (a real notebook, not included) a chatbot
 made errors on 10 % of the characters and on 11 % of the tone marks: `ə→a`,
 `ó→ő`, `ā→à`, and even a made-up capital `Ý`. Recent studies of handwriting in
 under-resourced languages reach the same conclusion: you need a model trained
