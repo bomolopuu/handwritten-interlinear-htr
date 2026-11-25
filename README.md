@@ -207,6 +207,13 @@ python ocr_asr_to_eaf.py tale.wav ../handwritten-interlinear-htr/gt/page001.gt.t
 #    Only the comparison, no alignment model needed:
 python ocr_asr_to_eaf.py tale.wav ../handwritten-interlinear-htr/gt/page001.gt.tsv \
        --base tale_asr.eaf --compare-only
+
+# 3. No audio at hand, or no torch? Leave the audio out: the lines take the
+#    times of the matching ASR stretch (coarser, ±0.3 s on the test page).
+#    The ASR can come from any tool that gives times: .srt, .vtt, Whisper .json,
+#    or a start<TAB>end<TAB>text table.
+python ocr_asr_to_eaf.py ../handwritten-interlinear-htr/gt/page001.gt.tsv \
+       --base tale_whisper.json -o tale_asr_ocr.eaf --media tale.wav
 ```
 
 Every `text` line of the `.gt.tsv` becomes one sentence, and the `gloss`
@@ -244,6 +251,12 @@ included here.
   score (marked `← check` in the report) was probably not found: listen to
   it. A high CER with a good score usually means ASR misheard or OCR misread a
   letter. The `ASR match` tier shows which.
+
+- **Without audio** the same page took the times of its ASR matches. They
+  were within 0.3 s of the aligned boundaries, in under a second. The same
+  ASR given as SRT, VTT, a TSV table and Hugging Face JSON gave identical
+  times. A line that ASR does not contain is placed after the previous one
+  and marked `not found?`.
 
 **No ASR for your language?** `attach_reference.py` from the same repository
 aligns a plain `.txt` (one line per sentence) without any ASR file. It cannot
